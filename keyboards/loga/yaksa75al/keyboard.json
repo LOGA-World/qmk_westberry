@@ -1,37 +1,53 @@
 {
     "manufacturer": "LOGA",
-    "keyboard_name": "Yaksa75AL",
+    "keyboard_name": "Yaksa75 AL",
     "maintainer": "kerlos",
     "bootloader": "wb32-dfu",
-    "bootmagic": {
-        "enabled": true,
-        "matrix": [0, 0]
-    },
-    "eeprom": {
-        "driver": "wear_leveling",
-        "wear_leveling": {
-            "backing_size": 4096,
-            "driver": "spi_flash"
-        }
-    },
     "features": {
         "bootmagic": true,
-        "encoder": true,
+        "command": false,
+        "console": false,
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "rgb_matrix": true
+        "rgb_matrix": true,
+        "deferred_exec": true,
+        "encoder": true
     },
+    "debounce": 1,
     "diode_direction": "ROW2COL",
     "encoder": {
         "rotary": [
             {"pin_a": "B7", "pin_b": "B6"}
         ]
     },
+    "dynamic_keymap": {
+        "layer_count": 5
+    },
     "matrix_pins": {
         "cols": ["A6", "C4", "C3", "C2", "C1", "C0", "B11", "B12", "C8", "C7", "C6", "C9", "B14", "B13", "A10"],
         "rows": ["A0", "A1", "A2", "A3", "A4", "C13"]
     },
+    "keycodes": [
+        {
+            "key": "KC_BT1"
+        },
+        {
+            "key": "KC_BT2"
+        },
+        {
+            "key": "KC_BT3"
+        },
+        {
+            "key": "KC_2G4"
+        },
+        {
+            "key": "CHK_BAT"
+        },
+        {
+            "key": "HS_BATQ"
+        }
+    ],
     "processor": "WB32FQ95",
     "rgb_matrix": {
         "animations": {
@@ -162,7 +178,16 @@
             {"matrix": [5, 12], "x": 192, "y": 64, "flags": 4},
             {"matrix": [5, 13], "x": 208, "y": 64, "flags": 4},
             {"matrix": [5, 14], "x": 224, "y": 64, "flags": 4}
-        ]
+        ],
+        "max_brightness": 190,
+        "val_steps": 38,
+        "speed_steps": 51,
+        "default": {
+            "animation": "cycle_left_right",
+            "val" :114,
+            "speed" :204
+        },
+        "sleep": true
     },
     "url": "https://www.logaworld.com/",
     "usb": {
@@ -173,7 +198,8 @@
         "vid": "0x342D"
     },
     "ws2812": {
-        "pin": "B15"
+        "pin": "B15",
+        "driver": "spi"
     },
     "layouts": {
         "LAYOUT": {

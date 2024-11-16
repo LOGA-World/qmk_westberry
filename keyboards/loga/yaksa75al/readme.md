@@ -1,12 +1,13 @@
-# loga/yaksa75al
+# LOGA Yaksa 75AL Aluminium : Amaterasu & Tsukuyomi
 
-![loga/yaksa75al](imgur.com image replace me!)
+| Amateratsu version | Tsukuyomi version |
+:-------------------------:|:-------------------------:
+![Amateratsu](https://i.imgur.com/Pipn91o.jpeg) | ![Tsukuyomi](https://i.imgur.com/nifm9Ga.jpeg)
 
-*A short description of the keyboard/project*
+Yaksa 75 Aluminium is a 75% keyboard designed by LOGA
 
-* Keyboard Maintainer: [Vatunyoo Suwannapisit](https://github.com/kerlos)
-* Hardware Supported: *The PCBs, controllers supported*
-* Hardware Availability: *Links to where you can find this hardware*
+* Keyboard Maintainer: [keRLos](https://github.com/kerlos)
+* Hardware Availability: [LOGA](https://logaworld.com)
 
 Make example for this keyboard (after setting up your build environment):
 
@@ -20,8 +21,7 @@ See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_to
 
 ## Bootloader
 
-Enter the bootloader in 3 ways:
+Enter the bootloader in 2 ways:
 
-* **Bootmagic reset**: Hold down the key at (0,0) in the matrix (usually the top left key or Escape) and plug in the keyboard
-* **Physical reset button**: Briefly press the button on the back of the PCB - some may have pads you must short instead
-* **Keycode in layout**: Press the key mapped to `QK_BOOT` if it is available
+* **Bootmagic reset**: Hold down esc+space and plug in the keyboard
+* **Keycode in layout**: Press fn+right_shift+esc while keyboard is plugged

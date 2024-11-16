@@ -3,6 +3,13 @@
     "keyboard_name": "Yaksa75 AL",
     "maintainer": "kerlos",
     "bootloader": "wb32-dfu",
+    "eeprom": {
+        "driver": "wear_leveling",
+        "wear_leveling": {
+            "backing_size": 4096,
+            "driver": "spi_flash"
+        }
+    },
     "features": {
         "bootmagic": true,
         "command": false,
@@ -12,7 +19,11 @@
         "nkro": true,
         "rgb_matrix": true,
         "deferred_exec": true,
-        "encoder": true
+        "encoder": true,
+        "via": true
+    },
+    "dynamic_keymap": {
+        "layer_count": 5
     },
     "debounce": 1,
     "diode_direction": "ROW2COL",
@@ -20,9 +31,6 @@
         "rotary": [
             {"pin_a": "B7", "pin_b": "B6"}
         ]
-    },
-    "dynamic_keymap": {
-        "layer_count": 5
     },
     "matrix_pins": {
         "cols": ["A6", "C4", "C3", "C2", "C1", "C0", "B11", "B12", "C8", "C7", "C6", "C9", "B14", "B13", "A10"],

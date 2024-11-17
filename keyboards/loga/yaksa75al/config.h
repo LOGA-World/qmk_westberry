@@ -17,9 +17,9 @@
 #define MM_BT_DEF_PIN                       C14
 #define MM_2G4_DEF_PIN                      C15
 
-#define MD_BT1_NAME                         "Yaksa75 AL"
-#define MD_BT2_NAME                         "Yaksa75 AL"
-#define MD_BT3_NAME                         "Yaksa75 AL"
+#define MD_BT1_NAME                         "Yaksa75 AL - 1"
+#define MD_BT2_NAME                         "Yaksa75 AL - 2"
+#define MD_BT3_NAME                         "Yaksa75 AL - 3"
 #define MD_DONGLE_PRODUCT                   "Yaksa75 AL"
 
 /* Device Connection RGB Indicator Light Index And Color */
@@ -43,6 +43,7 @@
 #define BATTERY_CAPACITY_LOW                15
 #define BATTERY_CAPACITY_STOP               0
 #define RGB_MATRIX_BAT_INDEX_MAP            {15, 16, 17, 18, 19, 20, 21, 22, 23, 24}
+#define CHARGE_CHK_INDEX                    56
 
 /* Status Indicator Lamp */
 #define HS_MATRIX_BLINK_INDEX_BAT           76

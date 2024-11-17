@@ -463,9 +463,9 @@ void query(void) {
     if (charge_chk_flag) {
         if (charging_state) {
             if (bat_full_flag) {
-                rgb_matrix_set_color(CHARGE_CHK_INDEX, IM_BAT_REQ_LEVEL3_COLOR);
-            } else {
                 rgb_matrix_set_color(CHARGE_CHK_INDEX, IM_BAT_REQ_LEVEL1_COLOR);
+            } else {
+                rgb_matrix_set_color(CHARGE_CHK_INDEX, IM_BAT_REQ_LEVEL3_COLOR);
             }
         }
     }

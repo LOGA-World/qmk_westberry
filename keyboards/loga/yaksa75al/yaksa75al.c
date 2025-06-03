@@ -249,6 +249,11 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
     static uint16_t       keycode_shadow               = 0x00;
     static deferred_token wls_process_long_press_token = INVALID_DEFERRED_TOKEN;
 
+    // Early return for non-wireless keycodes to reduce processing overhead
+    if (keycode != KC_BT1 && keycode != KC_BT2 && keycode != KC_BT3 && keycode != KC_2G4) {
+        return true;
+    }
+
     keycode_shadow = keycode;
 
 #    ifndef WLS_KEYCODE_PAIR_TIME
@@ -268,36 +273,38 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
             }                                                                                                                  \
         } while (false)
 
+    // Cache mode detection result to avoid repeated calls
+    static uint8_t cached_mode = 0;
+    static uint32_t last_mode_check = 0;
+    uint32_t current_time = timer_read32();
+    
+    if (timer_elapsed32(last_mode_check) > 100) { // Only check mode every 100ms
+        cached_mode = confinfo.devs;
+        hs_modeio_detection(true, &cached_mode, confinfo.last_btdevs);
+        last_mode_check = current_time;
+    }
+
     switch (keycode) {
         case KC_BT1: {
-            uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
+            if ((cached_mode == hs_bt) || (cached_mode == hs_wireless) || (cached_mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_BT1);
                 hs_rgb_blink_set_timer(timer_read32());
             }
-
         } break;
         case KC_BT2: {
-            uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
+            if ((cached_mode == hs_bt) || (cached_mode == hs_wireless) || (cached_mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_BT2);
                 hs_rgb_blink_set_timer(timer_read32());
             }
         } break;
         case KC_BT3: {
-            uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
-            if ((mode == hs_bt) || (mode == hs_wireless) || (mode == hs_none)) {
+            if ((cached_mode == hs_bt) || (cached_mode == hs_wireless) || (cached_mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_BT3);
                 hs_rgb_blink_set_timer(timer_read32());
             }
         } break;
         case KC_2G4: {
-            uint8_t mode = confinfo.devs;
-            hs_modeio_detection(true, &mode, confinfo.last_btdevs);
-            if ((mode == hs_2g4) || (mode == hs_wireless) || (mode == hs_none)) {
+            if ((cached_mode == hs_2g4) || (cached_mode == hs_wireless) || (cached_mode == hs_none)) {
                 WLS_KEYCODE_EXEC(DEVS_2G4);
                 hs_rgb_blink_set_timer(timer_read32());
             }
@@ -311,11 +318,17 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
 #endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (test_white_light_flag && record->event.pressed) {
+    // Only process on key press, not release, to reduce overhead
+    if (!record->event.pressed) {
+        return true;
+    }
+    
+    if (test_white_light_flag) {
         test_white_light_flag = false;
         rgb_matrix_set_color_all(0x00, 0x00, 0x00);
     }
 
+    // Only update timer if connected to reduce unnecessary timer operations
     if (*md_getp_state() == MD_STATE_CONNECTED) {
         hs_rgb_blink_set_timer(timer_read32());
     }
@@ -475,10 +488,21 @@ void housekeeping_task_user(void) {
     uint8_t         hs_now_mode;
     static uint32_t hs_current_time;
     static bool     val_value = false;
+    static bool     last_charging_state = false;
+    static bool     last_bat_full_flag = false;
 
     charging_state = readPin(HS_BAT_CABLE_PIN);
-
     bat_full_flag = readPin(BAT_FULL_PIN);
+
+    // Only process charging state changes or every 5 seconds instead of 1 second
+    bool state_changed = (charging_state != last_charging_state) || (bat_full_flag != last_bat_full_flag);
+    
+    if (!state_changed && hs_current_time && timer_elapsed32(hs_current_time) < 5000) {
+        return; // Early return to reduce processing overhead
+    }
+
+    last_charging_state = charging_state;
+    last_bat_full_flag = bat_full_flag;
 
     if (charging_state && (bat_full_flag)) {
         hs_now_mode = MD_SND_CMD_DEVCTRL_CHARGING_DONE;
@@ -488,7 +512,7 @@ void housekeeping_task_user(void) {
         hs_now_mode = MD_SND_CMD_DEVCTRL_CHARGING_STOP;
     }
 
-    if (!hs_current_time || timer_elapsed32(hs_current_time) > 1000) {
+    if (!hs_current_time || timer_elapsed32(hs_current_time) > 5000 || state_changed) {
         hs_current_time = timer_read32();
         md_send_devctrl(hs_now_mode);
         md_send_devctrl(MD_SND_CMD_DEVCTRL_INQVOL);
@@ -780,6 +804,9 @@ void rgb_matrix_hs_indicator(void) {
 }
 
 bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
+    static uint32_t last_indicator_update = 0;
+    uint32_t current_time = timer_read32();
+    
     if (test_white_light_flag) {
         RGB rgb_test_open = hsv_to_rgb((HSV){.h = 0, .s = 0, .v = RGB_MATRIX_VAL_STEP * 5});
         rgb_matrix_set_color_all(rgb_test_open.r, rgb_test_open.g, rgb_test_open.b);
@@ -797,6 +824,7 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
         ee_clr_timer = 0;
     }
 
+    // Always update caps lock and win lock indicators (these are important)
     if (host_keyboard_led_state().caps_lock)
         rgb_matrix_set_color(HS_RGB_INDEX_CAPS, 0x20, 0x20, 0x20);
     else
@@ -806,32 +834,30 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
     else
         rgb_matrix_set_color(HS_RGB_INDEX_WIN_LOCK, RGB_BLACK);
 
-        // if (rgb_matrix_indicators_advanced_rgblight(led_min, led_max) != true) {
-
-        //     return false;
-        // }
-
+    // Reduce frequency of heavy RGB operations to every 50ms instead of every frame
+    if (timer_elapsed32(last_indicator_update) >= 50) {
+        last_indicator_update = current_time;
+        
 #ifdef WIRELESS_ENABLE
-    rgb_matrix_wls_indicator();
+        rgb_matrix_wls_indicator();
 
-    if (enable_bat_indicators && !inqbat_flag) {
-        rgb_matrix_hs_bat();
-        bat_indicators();
-        bat_indicator_cnt = timer_read32();
-    }
-
-    if (!enable_bat_indicators) {
-        if (timer_elapsed32(bat_indicator_cnt) > 2000) {
-            enable_bat_indicators = true;
-            bat_indicator_cnt     = timer_read32();
+        if (enable_bat_indicators && !inqbat_flag) {
+            rgb_matrix_hs_bat();
+            bat_indicators();
+            bat_indicator_cnt = timer_read32();
         }
-    }
 
+        if (!enable_bat_indicators) {
+            if (timer_elapsed32(bat_indicator_cnt) > 2000) {
+                enable_bat_indicators = true;
+                bat_indicator_cnt     = timer_read32();
+            }
+        }
 #endif
 
-    rgb_matrix_hs_indicator();
-
-    query();
+        rgb_matrix_hs_indicator();
+        query();
+    }
 
     return true;
 }
